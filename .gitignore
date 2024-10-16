@@ -1,0 +1,20 @@
+# netbeans project files
+nbproject/private/
+nbproject/Makefile-Debug.mk
+nbproject/Makefile-Release.mk
+nbproject/Makefile-Default.mk
+nbproject/Makefile.mk
+nbproject/project.properties
+#build output
+build/
+dist/
+*.jar
+*.war
+#temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+#common files
+*.DS_Store
+Thumbs.db
