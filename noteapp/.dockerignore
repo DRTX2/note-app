@@ -1,0 +1,40 @@
+# Dependencias
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema de control de versiones
+.git
+.gitignore
+
+# Archivos de entorno
+.env
+.env.*
+
+# Archivos de IDE y editor
+.idea
+.vscode
+*.swp
+*.swo
+
+# Archivos de compilación
+/dist
+/build
+
+# Archivos de test
+/coverage
+/test
+*.spec.ts
+*.test.ts
+
+# Archivos de Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Otros
+README.md
+LICENSE
+*.md
+.DS_Store
