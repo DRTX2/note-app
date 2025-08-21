@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +19,8 @@ export class UsersService {
     return await this.userRepository.save(user);
   }
 
-  async login(email: string, password: string): Promise<User> {
+  async login(loginUserDto: LoginUserDto): Promise<User> {
+    const { email, password } = loginUserDto;
     const user = await this.userRepository.findOne({where:{email}});
     if(!user) throw new NotFoundException(`User with email ${email} not found`);
 
