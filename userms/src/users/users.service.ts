@@ -6,6 +6,8 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
+import { MessagePattern } from '@nestjs/microservices';
+import { err, ok, ServiceResponse } from './entities/service-response';
 
 @Injectable()
 export class UsersService {
@@ -19,15 +21,18 @@ export class UsersService {
     return await this.userRepository.save(user);
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<User> {
+  @MessagePattern({cmd: 'validate_user'})
+  async login(loginUserDto: LoginUserDto): Promise<ServiceResponse<Omit<User, 'password'>>> {
     const { email, password } = loginUserDto;
     const user = await this.userRepository.findOne({where:{email}});
-    if(!user) throw new NotFoundException(`User with email ${email} not found`);
+    if(!user) return err(`User not found`);
 
     const isMatch=await bcrypt.compare(password, user.password);
-    if(!isMatch) throw new UnauthorizedException('Invalid credentials');
+    if(!isMatch) return err('Invalid credentials');
 
-    return user;
+    const { password: _, ...userData } = user;
+
+    return ok(userData);
   }
 
   async findOne(id: number): Promise<User> {
