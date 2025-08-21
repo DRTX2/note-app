@@ -5,9 +5,21 @@ import { AuthController } from './auth.controller';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
+    ClientsModule.register([
+      {
+        name: 'USERS_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://localhost:5672'],
+          queue: 'user_queue',
+          queueOptions: { durable: false }
+        }
+      }
+    ]),
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || '$ecRet_K3y', // Cambia esto por una variable de entorno en producción

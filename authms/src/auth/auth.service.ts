@@ -1,28 +1,36 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthPayloadDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
-
-const fakeUsers = [
-  { id: 1, username: 'test', password: 'test' },
-  { id: 2, username: 'user', password: 'pass' },
-];
+import { ClientProxy } from '@nestjs/microservices';
+import { ServiceResponse } from './entities/service-response';
+import { UserPayload } from './entities/user-payload.entity';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    @Inject('USERS_SERVICE') private readonly usersClient: ClientProxy,
+    private readonly jwtService: JwtService,
+  ) {}
 
-  async validateUser({ username, password }: AuthPayloadDto): Promise<any> {
+  async validateUser({ username, password }: AuthPayloadDto): Promise<string> {
     // Aquí iría la lógica para validar al usuario
-    const findUser = fakeUsers.find(
-      (user) => user.username === username && user.password === password,
+    const response = await firstValueFrom(
+      this.usersClient.send<ServiceResponse<UserPayload>>(
+        { cmd: 'validate_user' },
+        { username, password },
+      ),
     );
-    //if (!findUser) throw new NotFoundException('User not found');
-    if(findUser){
 
-        const { password: _psw, ...userData } = findUser;
-        return this.jwtService.sign(userData);
-    }
-    return null;
+    if (!response?.success || !response.data)
+      throw new UnauthorizedException(response!.reason ?? 'Unauthorized');
+
+    return this.jwtService.sign(response.data);
   }
 
   async login(user: AuthPayloadDto) {
