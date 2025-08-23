@@ -1,0 +1,4 @@
+# Ignore all .vscode folders
+.vscode/
+**/.vscode/
+
