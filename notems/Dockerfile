@@ -1,5 +1,5 @@
 # Etapa de construcción
-FROM node:18-alpine AS builder
+FROM node:18 AS builder
 
 # Directorio de trabajo
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Etapa de producción
-FROM node:18-alpine AS production
+FROM node:18 AS production
 
 # Argumentos y variables de entorno para la etapa de producción
 ARG NODE_ENV=production
