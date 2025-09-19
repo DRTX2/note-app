@@ -16,9 +16,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         options: {
           urls: [process.env.RABBITMQ_URL || 'amqp://rabbitmq-ms:5672'],
           queue: 'user_queue',
-          queueOptions: { durable: false }
-        }
-      }
+          queueOptions: { durable: false },
+          retryAttempts: 5,
+          retryDelay: 3000,
+        },
+      },
     ]),
     PassportModule,
     JwtModule.register({
@@ -27,6 +29,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     }),
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
-  controllers: [AuthController]
+  controllers: [AuthController],
 })
 export class AuthModule {}

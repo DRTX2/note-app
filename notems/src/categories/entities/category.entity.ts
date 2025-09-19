@@ -3,15 +3,15 @@ import { Note } from '../../notes/entities/note.entity';
 
 @Entity()
 export class Category {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column()
-    name: string;
+  @Column()
+  name: string;
 
-    @Column({ nullable: true })
-    description?: string;
+  @Column({ nullable: true })
+  description?: string;
 
-    @OneToMany(() => Note, note => note.category)
-    notes: Note[];
+  @OneToMany(() => Note, (note) => note.category)
+  notes: Note[];
 }

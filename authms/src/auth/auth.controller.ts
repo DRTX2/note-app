@@ -6,14 +6,14 @@ import { LocalGuard } from './guards/local.guard';
 import type { Request } from 'express';
 import { JwtGuard } from './guards/jwt.guard';
 
-@Controller('auth')
+@Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
   @UseGuards(LocalGuard)
   async login(@Req() request: Request) {
-    return request.user;
+    return this.authService.login(request.user as AuthPayloadDto);
   }
 
   @Get('status')

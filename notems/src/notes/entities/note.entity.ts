@@ -15,20 +15,20 @@ import {
 export class Note {
   @PrimaryGeneratedColumn()
   id: number;
-  
+
   @Column()
   title: string;
-  
+
   @Column()
   content: string;
 
   @ManyToMany(() => Tag, (tag) => tag.notes)
   @JoinTable()
   tags: Tag[];
-  
+
   @ManyToOne(() => Category, (category) => category.notes)
   category: Category | null;
 
-  @DeleteDateColumn({nullable:true})
+  @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;
 }

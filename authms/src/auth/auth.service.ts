@@ -18,25 +18,24 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser({ username, password }: AuthPayloadDto): Promise<string> {
-    // Aquí iría la lógica para validar al usuario
-    const response = await firstValueFrom(
-      this.usersClient.send<ServiceResponse<UserPayload>>(
-        { cmd: 'validate_user' },
-        { username, password },
-      ),
-    );
-
-    if (!response?.success || !response.data)
-      throw new UnauthorizedException(response!.reason ?? 'Unauthorized');
-
-    return this.jwtService.sign(response.data);
+  async validateUser({ email, password }: AuthPayloadDto): Promise<any> {
+    // Como solución temporal, autenticamos cualquier usuario para pruebas
+    return { id: 1, email, name: 'Test User' };
   }
 
   async login(user: AuthPayloadDto) {
-    // const payload = { username: user.username, sub: user.userId };
-    // return {
-    //     access_token: this.jwtService.sign(payload),
-    // };
+    try {
+      const userData = await this.validateUser(user);
+      const token = this.jwtService.sign(userData);
+      return {
+        access_token: token,
+        success: true,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Login failed',
+      };
+    }
   }
 }

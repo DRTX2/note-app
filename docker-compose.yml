@@ -7,10 +7,12 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - authms
-      - notems
-      - userms
-      - rabbitmq
+      authms:
+        condition: service_healthy
+      notems:
+        condition: service_healthy
+      userms:
+        condition: service_healthy
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -21,6 +23,12 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     restart: unless-stopped
 
   postgres:
@@ -34,6 +42,12 @@ services:
       POSTGRES_PASSWORD: notespass
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notesuser -d notesdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     restart: unless-stopped
 
   authms:
@@ -49,6 +63,19 @@ services:
       - DB_USER=notesuser
       - DB_PASS=notespass
       - DB_NAME=notesdb
+      - JWT_SECRET=wS3cr3tK3yF0rPr0duction!
+      - ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
 
   notems:
@@ -64,6 +91,18 @@ services:
       - DB_USER=notesuser
       - DB_PASS=notespass
       - DB_NAME=notesdb
+      - ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
 
   userms:
@@ -79,8 +118,25 @@ services:
       - DB_USER=notesuser
       - DB_PASS=notespass
       - DB_NAME=notesdb
+      - ALLOWED_ORIGINS=http://localhost:8080,http://localhost:3000
+      - HTTP_PORT=3000
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
 
 networks:
   default:
     driver: bridge
+
+volumes:
+  pgdata: 
+

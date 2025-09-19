@@ -40,7 +40,7 @@ export class TagsService {
     }
 
     // Verificar nombres duplicados en el array de entrada
-    const tagNames = createTagsDto.tags.map(tag => tag.name);
+    const tagNames = createTagsDto.tags.map((tag) => tag.name);
     const uniqueNames = new Set(tagNames);
     if (tagNames.length !== uniqueNames.size) {
       throw new BadRequestException('Duplicate tag names in request');
@@ -48,11 +48,11 @@ export class TagsService {
 
     // Verificar si algún nombre ya existe en la base de datos
     const existingTags = await this.tagRepository.find({
-      where: tagNames.map(name => ({ name }))
+      where: tagNames.map((name) => ({ name })),
     });
 
     if (existingTags.length > 0) {
-      const existingNames = existingTags.map(tag => tag.name).join(', ');
+      const existingNames = existingTags.map((tag) => tag.name).join(', ');
       throw new BadRequestException(`Tags already exist: ${existingNames}`);
     }
 

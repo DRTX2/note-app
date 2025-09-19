@@ -28,14 +28,10 @@ export class NotesController {
     description: 'The note has been successfully created.',
     type: Note,
   })
-
   @Post()
   create(@Body() createNoteDto: CreateNoteDto) {
     return this.notesService.create(createNoteDto);
   }
-
-
-
 
   @ApiOperation({ summary: 'Retrieve all notes with or without filters' })
   @ApiResponse({
@@ -43,14 +39,11 @@ export class NotesController {
     description: 'The notes have been successfully retrieved.',
     type: [Note],
   })
-
   @Get()
   findAll(@Query() filters: SearchNotesDto) {
     return this.notesService.findAll(filters);
   }
 
-  
-  
   @ApiOperation({ summary: 'Retrieve a note by ID' })
   @ApiParam({
     name: 'id',
@@ -62,14 +55,10 @@ export class NotesController {
     description: 'The note has been successfully retrieved.',
     type: Note,
   })
-
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.notesService.findOne(id);
   }
-
-
-
 
   @ApiOperation({ summary: 'Update a note by ID' })
   @ApiParam({
@@ -82,7 +71,6 @@ export class NotesController {
     description: 'The note has been successfully updated.',
     type: Note,
   })
-
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -91,8 +79,6 @@ export class NotesController {
     return this.notesService.update(id, updateNoteDto);
   }
 
-
-  
   @ApiOperation({ summary: 'Delete a note by ID' })
   @ApiParam({
     name: 'id',
@@ -103,13 +89,10 @@ export class NotesController {
     status: 204,
     description: 'The note has been successfully deleted.',
   })
-  
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.notesService.remove(id);
   }
-
-
 
   @ApiOperation({ summary: 'Restore a deleted note by ID' })
   @ApiParam({
@@ -125,5 +108,4 @@ export class NotesController {
   restore(@Param('id', ParseIntPipe) id: number) {
     return this.notesService.restore(id);
   }
-
 }

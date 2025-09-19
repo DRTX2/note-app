@@ -27,15 +27,15 @@ export class NotesService {
     try {
       const note = this.noteRepository.create({
         title: createNoteDto.title,
-        content: createNoteDto.content
+        content: createNoteDto.content,
       });
 
       note.category = createNoteDto.categoryId
-          ? await this.validateCategory(createNoteDto.categoryId)
-          : null;
+        ? await this.validateCategory(createNoteDto.categoryId)
+        : null;
       note.tags = createNoteDto.tagIds
-          ? await this.validateTags(createNoteDto.tagIds)
-          : [];
+        ? await this.validateTags(createNoteDto.tagIds)
+        : [];
 
       return await this.noteRepository.save(note);
     } catch (error) {
@@ -69,39 +69,38 @@ export class NotesService {
     return tags;
   }
 
-  async findAll(filters: SearchNotesDto): Promise<
-  {
-    data:Note[]; 
-    total:number
-    page:number;
-    limit:number;
-    totalPages:number;
-  } > {
+  async findAll(filters: SearchNotesDto): Promise<{
+    data: Note[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const { title, categoryId, tagIds, page, limit, sortBy, order } = filters;
-    const query=this.noteRepository
+    const query = this.noteRepository
       .createQueryBuilder('note')
       .leftJoinAndSelect('note.category', 'category')
       .leftJoinAndSelect('note.tags', 'tag');
 
-      if(title)
-        query.andWhere('note.title LIKE :title', {title: `%${title}%`});
+    if (title)
+      query.andWhere('note.title LIKE :title', { title: `%${title}%` });
 
-      if(categoryId)
-        query.andWhere('note.categoryId = :categoryId', {categoryId});
+    if (categoryId)
+      query.andWhere('note.categoryId = :categoryId', { categoryId });
 
-      if(tagIds && tagIds.length > 0)
-        query.andWhere('tag.id IN (:...tagIds)', {tagIds});
+    if (tagIds && tagIds.length > 0)
+      query.andWhere('tag.id IN (:...tagIds)', { tagIds });
 
-      query
-        .skip((page - 1) * limit)
-        .take(limit)
-        .orderBy(`note.${sortBy}`, order.toUpperCase() as 'ASC' | 'DESC');
+    query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy(`note.${sortBy}`, order.toUpperCase() as 'ASC' | 'DESC');
 
-      const [data, total] = await query.getManyAndCount();
+    const [data, total] = await query.getManyAndCount();
 
-      const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit);
 
-      return {data, total, page, limit, totalPages};
+    return { data, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Note> {
@@ -124,9 +123,7 @@ export class NotesService {
     await this.noteRepository.softRemove(note);
   }
 
-  async restore (id:number): Promise<void>{
+  async restore(id: number): Promise<void> {
     await this.noteRepository.restore(id);
   }
-
-  
 }

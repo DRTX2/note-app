@@ -1,32 +1,159 @@
-Depende un poco de tu infraestructura y qué tan detallado quieras dejarlo, pero te doy un estimado profesional:
+# Note App - Aplicación de Microservicios
 
----
+Una aplicación de notas basada en arquitectura de microservicios utilizando NestJS, PostgreSQL y RabbitMQ.
 
-### 1️⃣ Configuración básica de NGINX como gateway HTTP (routing)
+## Arquitectura
 
-* **Instalación**: 5–10 minutos.
-* **Configurar rutas hacia microservicios**: 30–60 minutos (depende de cuántos servicios tengas y sus puertos).
-* **Pruebas de conexión y validación de endpoints**: 15–30 minutos.
+La aplicación está compuesta por tres microservicios principales:
 
-### 2️⃣ SSL / HTTPS (opcional pero recomendado)
+- **AuthMS**: Gestiona la autenticación y generación de tokens JWT
+- **NoteMS**: Maneja las operaciones CRUD de notas, categorías y etiquetas
+- **UserMS**: Administra los usuarios y su información
 
-* **Generar certificados con Let’s Encrypt**: 15–30 minutos.
-* **Configurar NGINX para HTTPS**: 10–20 minutos.
+## Configuración y Ejecución
 
-### 3️⃣ Mejoras profesionales
+Para ejecutar la aplicación, utiliza Docker Compose:
 
-* **Rate limiting**: 15–30 minutos.
-* **Logging y acceso**: 15–30 minutos.
-* **Load balancing entre instancias**: 30–60 minutos.
+```bash
+docker-compose up -d
+```
 
----
+La aplicación estará disponible en http://localhost:8080
 
-✅ **Tiempo total estimado para un setup funcional y seguro**: 2–3 horas si solo quieres que funcione y sea confiable.
-✅ **Tiempo total para un setup “10/10” con optimización, logging, balanceo y HTTPS**: 4–6 horas.
+## Endpoints Disponibles
 
----
+### Microservicio de Autenticación (AuthMS)
 
-Si quieres, puedo hacerte un **ejemplo de configuración de NGINX listo para enrutar tus microservicios de users y auth** que se pueda usar de inmediato. Eso te ahorraría tiempo y te deja el gateway casi 10/10 desde el inicio.
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/auth/login` | Inicia sesión con credenciales de usuario |
+| GET | `/auth/status` | Verifica el estado de autenticación actual (requiere JWT) |
+| GET | `/auth/api/health` | Endpoint de verificación de salud del servicio |
 
-¿Quieres que haga eso?
+### Microservicio de Notas (NoteMS)
 
+#### Notas
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/notes` | Recupera todas las notas (soporta filtros) |
+| GET | `/notes/:id` | Recupera una nota por ID |
+| POST | `/notes` | Crea una nueva nota |
+| PUT | `/notes/:id` | Actualiza una nota existente |
+| DELETE | `/notes/:id` | Elimina una nota |
+| PATCH | `/notes/:id/restore` | Restaura una nota eliminada |
+
+#### Categorías
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/categories` | Recupera todas las categorías |
+| GET | `/categories/:id` | Recupera una categoría por ID |
+| POST | `/categories` | Crea una nueva categoría |
+| PUT | `/categories/:id` | Actualiza una categoría existente |
+| DELETE | `/categories/:id` | Elimina una categoría |
+
+#### Etiquetas
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/tags` | Recupera todas las etiquetas |
+| GET | `/tags/:id` | Recupera una etiqueta por ID |
+| POST | `/tags` | Crea una nueva etiqueta |
+| POST | `/tags/multiple` | Crea múltiples etiquetas a la vez |
+| PUT | `/tags/:id` | Actualiza una etiqueta existente |
+| DELETE | `/tags/:id` | Elimina una etiqueta |
+
+#### Health Check
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/notes/api/health` | Endpoint de verificación de salud del servicio |
+
+### Microservicio de Usuarios (UserMS)
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/users` | Registra un nuevo usuario |
+| POST | `/users/login` | Inicia sesión (usado internamente) |
+| GET | `/users/:id` | Recupera información de un usuario por ID |
+| PUT | `/users/:id` | Actualiza información de un usuario |
+| DELETE | `/users/:id` | Elimina un usuario |
+| GET | `/users/api/health` | Endpoint de verificación de salud del servicio |
+
+## Documentación API
+
+La documentación completa de la API está disponible en:
+
+- Swagger UI: http://localhost:3002/api (NoteMS)
+
+## Flujo de Autenticación
+
+1. Registrar un usuario enviando una solicitud POST a `/users`
+2. Iniciar sesión con POST a `/auth/login` para recibir un token JWT
+3. Incluir el token en las solicitudes como encabezado `Authorization: Bearer {token}`
+
+## Variables de Entorno
+
+Las variables de entorno están configuradas en el archivo `docker-compose.yml` pero pueden ser modificadas según sea necesario:
+
+- `NODE_ENV`: Entorno de ejecución ('development' o 'production')
+- `RABBITMQ_URL`: URL de conexión a RabbitMQ
+- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_NAME`: Configuración de la base de datos
+- `JWT_SECRET`: Clave secreta para firmar tokens JWT
+- `ALLOWED_ORIGINS`: Orígenes permitidos para CORS
+
+## Solución de Problemas
+
+Si encuentra problemas al ejecutar la aplicación:
+
+1. Asegúrese de que los puertos 8080, 5432 y 5672 estén disponibles
+2. Verifique los logs de Docker: `docker-compose logs -f`
+3. Compruebe el estado de los servicios: `docker-compose ps`
+4. Verifique los health checks de los servicios en los siguientes endpoints:
+   - AuthMS: `http://localhost:8080/auth/api/health`
+   - NoteMS: `http://localhost:8080/notes/api/health`
+   - UserMS: `http://localhost:8080/users/api/health`
+
+## Configuración NGINX
+
+La aplicación utiliza NGINX como puerta de enlace (API Gateway) para dirigir las solicitudes a los microservicios correspondientes. La configuración de NGINX se encuentra en el archivo `nginx.conf` y contiene las siguientes reglas importantes:
+
+```nginx
+# Configuración para el microservicio de autenticación
+location /auth {
+    proxy_pass http://authms;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    # Otros headers...
+}
+
+location /auth/api/health {
+    proxy_pass http://authms/api/health;
+    # Headers...
+}
+
+# Configuración para el microservicio de notas
+location /notes {
+    proxy_pass http://notems;
+    # Headers...
+}
+
+location /notes/api/health {
+    proxy_pass http://notems/api/health;
+    # Headers...
+}
+
+# Configuración para el microservicio de usuarios
+location /users {
+    proxy_pass http://userms;
+    # Headers...
+}
+
+location /users/api/health {
+    proxy_pass http://userms/api/health;
+    # Headers...
+}
+```
+
+**Nota importante:** Los controladores en NestJS ya incluyen sus propios prefijos (por ejemplo, `@Controller('users')`). Por esta razón, la configuración de NGINX debe tener en cuenta estos prefijos para evitar duplicaciones en las rutas. Las rutas específicas para health checks son necesarias para garantizar que estos endpoints sean accesibles correctamente.

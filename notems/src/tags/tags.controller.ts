@@ -31,18 +31,17 @@ export class TagsController {
     return this.tagsService.createOne(createTagDto);
   }
 
-  @Post("/multiple")
+  @Post('/multiple')
   @ApiOperation({ summary: 'Create multiple tags' })
   @ApiResponse({
     status: 201,
     description: 'The tags have been successfully created.',
     type: Tag,
-    isArray: true
+    isArray: true,
   })
   createMultiple(@Body() createTagsDto: CreateTagsDto) {
     return this.tagsService.createMultiple(createTagsDto);
   }
-
 
   @Get()
   @ApiOperation({ summary: 'Get all tags' })

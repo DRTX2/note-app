@@ -1,6 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, IsOptional, IsString, IsArray, IsIn } from "class-validator";
-import { Transform, Type } from "class-transformer";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNumber, IsOptional, IsString, IsArray, IsIn } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 
 export class SearchNotesDto {
   @ApiProperty({ required: false })
@@ -18,8 +18,8 @@ export class SearchNotesDto {
   @IsOptional()
   @IsArray()
   @Transform(({ value }) => {
-    if(Array.isArray(value)) return value.map(v=>Number(v));
-    if(typeof value === 'string') return [Number(value)];
+    if (Array.isArray(value)) return value.map((v) => Number(v));
+    if (typeof value === 'string') return [Number(value)];
     return [];
   })
   tagIds?: number[];

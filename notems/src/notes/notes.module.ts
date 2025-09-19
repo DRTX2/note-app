@@ -9,7 +9,6 @@ import { Tag } from '../tags/entities/tag.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([Note, Category, Tag])],
   controllers: [NotesController],
-  providers: [NotesService]
+  providers: [NotesService],
 })
-
 export class NotesModule {}
